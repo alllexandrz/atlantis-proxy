@@ -83,7 +83,6 @@ func getProxyUrl(proxyConditionRaw string) (host_url string,path string) {
 
 }
 
-
 func logRequestPayload(requestionPayload BB_payload, proxyUrl string) {
 	log.Printf("branche: %s, proxy_url: %s\n", requestionPayload.PullRequest.ToRef.DisplayId, proxyUrl)
 }
