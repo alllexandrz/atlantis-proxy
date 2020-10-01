@@ -38,7 +38,17 @@ func (DebugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("-- Request DUMP --")
 	fmt.Println(string(b))
+
+	response, err := http.DefaultTransport.RoundTrip(r)
+	body, err := httputil.DumpResponse(response, true)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("-- Response DUMP --")
+	fmt.Println(string(body))
+
 	return http.DefaultTransport.RoundTrip(r)
 }
 
@@ -59,7 +69,6 @@ func serveReverseProxy(target string,path string,res http.ResponseWriter, req *h
 func handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {
 	requestPayload := parseRequestBody(req)
 	url,path := getProxyUrl(requestPayload.PullRequest.ToRef.DisplayId)
-
 	logRequestPayload(requestPayload, url)
 
 	serveReverseProxy(url,path, res, req)
