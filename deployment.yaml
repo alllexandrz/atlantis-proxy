@@ -22,7 +22,7 @@ spec:
       containers:
         - name: atlantis-proxy
           imagePullPolicy: Always
-          image: clubdevops/consul-upstream-checker:0.0.1 # 1. Replace <VERSION> with the most recent release.
+          image: clubdevops/atlantis-proxy:latest # 1. Replace <VERSION> with the most recent release.
           env:
             - name: C_DEVELOP
               value: https://develop.atlantis.com/atlantis/events
