@@ -27,6 +27,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/",handleRequestAndRedirect )
+	router.HandleFunc("/healthz",handleHealthz)
 	http.Handle("/",router)
 
 	fmt.Println("Server is listening...")
@@ -38,7 +39,7 @@ func (DebugTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("-- Request DUMP --")
+	fmt.Println("\n-- Request DUMP --")
 	fmt.Println(string(b))
 
 	response, err := http.DefaultTransport.RoundTrip(r)
@@ -64,6 +65,14 @@ func serveReverseProxy(target string,path string,res http.ResponseWriter, req *h
 	proxy.Transport = DebugTransport{}
 	proxy.ServeHTTP(res,req)
 
+}
+
+func handleHealthz(res http.ResponseWriter, req *http.Request) {
+	requestPayload := parseRequestBody(req)
+	url,path := getProxyUrl(requestPayload.PullRequest.ToRef.DisplayId)
+	logRequestPayload(requestPayload, url)
+
+	serveReverseProxy(url,path, res, req)
 }
 
 func handleRequestAndRedirect(res http.ResponseWriter, req *http.Request) {

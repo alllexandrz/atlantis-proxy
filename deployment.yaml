@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: atlantis-proxy
+spec:
+  serviceName: atlantis-proxy
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  selector:
+    matchLabels:
+      app: atlantis-proxy
+  template:
+    metadata:
+      labels:
+        app: "atlantis-proxy"
+    spec:
+      securityContext:
+        fsGroup: 1000 # atlantis-proxy group (1000) read/write access to volumes.
+      containers:
+        - name: atlantis-proxy
+          imagePullPolicy: Always
+          image: clubdevops/consul-upstream-checker:0.0.1 # 1. Replace <VERSION> with the most recent release.
+          env:
+            - name: C_DEVELOP
+              value: https://develop.atlantis.com/atlantis/events
+          ports:
+            - name: atlantis-proxy
+              containerPort: 5000
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi
+              cpu: 100m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atlantis-proxy
+  annotations:
+    "consul.hashicorp.com/service-sync": "true"
+    "consul.hashicorp.com/service-name": "atlantis-proxy"
+spec:
+  type: ClusterIP
+  ports:
+    - name: atlantis-proxy-https
+      port: 80
+      targetPort: 5000
+  selector:
+    app: atlantis-proxy
